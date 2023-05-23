@@ -14,3 +14,8 @@ jobs:
           npm -v
       - name: Echo another string
         run: echo "Testing debug log"
+      - name: Python command
+        run: |
+          import platform
+          print(platform.processor())
+        shell: python
