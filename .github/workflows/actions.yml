@@ -1,11 +1,11 @@
 name: Shell commands
 
 on:
-  push:
-    branches:
-      - main
-      - "feature/*" # matches feature/featA, feature/featB. doesnot match feature/feat/A
-      - "feature/**" 
+#  push:
+#    branches:
+#      - main
+#      - "feature/*" # matches feature/featA, feature/featB. doesnot match feature/feat/A
+#      - "feature/**" 
     #branches-ignore:
     # - dev
     #tags:
@@ -20,8 +20,8 @@ on:
  #  - cron: "0/5 * * * *"
  #  - cron: "0/8 * * * *"
  # push:
- # pull_request:
- #   types: [closed, assigned, reopened, opened]
+  pull_request:
+    types: [closed, assigned, reopened, opened]
 
 jobs:
   run-github-actions:
