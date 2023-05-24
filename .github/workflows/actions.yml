@@ -19,7 +19,7 @@ on:
  # schedule:
  #  - cron: "0/5 * * * *"
  #  - cron: "0/8 * * * *"
-  push:
+ # push:
   pull_request:
     types: [closed, assigned, reopened, opened]
 
