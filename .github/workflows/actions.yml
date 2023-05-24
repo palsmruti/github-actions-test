@@ -8,11 +8,11 @@ on:
       - "feature/**" 
     #branches-ignore:
     # - dev
-    tags:
-      - v1.*
-    paths:
-      - "**.js"
-      - abc/def/**
+    #tags:
+    #  - v1.*
+    #paths:
+    #  - "**.js"
+    #  - abc/def/**
 
  # repository_dispatch:
  #   types: [build]
