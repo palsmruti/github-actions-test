@@ -1,12 +1,14 @@
 name: Shell commands
 
 on:
-  schedule:
-    - cron: "0/5 * * * *"
-    - cron: "0/8 * * * *"
+  repository_dispatch:
+    types: [build]
+ # schedule:
+ #  - cron: "0/5 * * * *"
+ #  - cron: "0/8 * * * *"
  # push:
-  pull_request:
-    types: [closed, assigned, reopened, opened]
+ # pull_request:
+ #   types: [closed, assigned, reopened, opened]
 
 jobs:
   run-github-actions:
