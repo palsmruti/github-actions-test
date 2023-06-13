@@ -1,7 +1,25 @@
-name: Shell commands
+name: Action workflow
 
 on:
-  push:
+#  push:
+#    branches:
+#      - main
+#      - "feature/*" # matches feature/featA, feature/featB. doesnot match feature/feat/A
+#      - "feature/**" 
+    #branches-ignore:
+    # - dev
+    #tags:
+    #  - v1.*
+    #paths:
+    #  - "**.js"
+    #  - abc/def/**
+
+ # repository_dispatch:
+ #   types: [build]
+ # schedule:
+ #  - cron: "0/5 * * * *"
+ #  - cron: "0/8 * * * *"
+ # push:
   pull_request:
     types: [closed, assigned, reopened, opened]
 
