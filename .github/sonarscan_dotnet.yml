@@ -1,0 +1,68 @@
+name: Code Scan for C#
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+  pull_request:
+    branches:
+      - main
+      - dev
+    types: [opened, synchronize, reopened]
+
+  workflow_dispatch:
+
+env:
+  AGGREGATOR_TEST_EXCLUSIONS: "src/ApiGateways/**/**/**/*"
+  SERVICE_TEST_EXCLUSIONS: "src/Services/**/**/*"
+
+jobs:
+  sonar-analysis:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+      - name: Remove Sonar property file
+        run: |
+          Remove-Item -Path sonar-project.properties -Force
+      - name: Restore Dependencies
+        run: |
+          dotnet restore src/ApiGateways/Bff.Card/Card/Card.Aggregator.sln
+      - name: Install SonarQube scanner
+        shell: bash
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
+        
+      - name: Begin prepare SonarQube analysis
+        shell: bash
+        run: |
+          dotnet-sonarscanner begin \
+          /k:"${{ secrets.SONAR_PROJECT_KEY }}" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+          /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
+          /d:sonar.qualitygate.wait=true \
+          /d:sonar.qualitygate.timeout=500 \
+          /d:sonar.sourceEncoding=UTF-8
+
+      - name: Build
+        run: |
+          dotnet build src/ApiGateways/Bff.Card/Card/Card.Aggregator.sln --configuration Release --no-restore
+          dotnet build src/ApiGateways/Bff.Finance/Invoice/Invoice.Aggregator.sln --configuration Release --no-restore
+          
+      - name: Test
+        run: |
+          dotnet test src/ApiGateways/Bff.Card/Card/Card.Aggregator.sln --configuration Release --no-build --verbosity normal --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura,opencover\" /p:CoverletOutput=./CodeCoverageResults/
+          dotnet test src/ApiGateways/Bff.Finance/Invoice/Invoice.Aggregator.sln --configuration Release --no-build --verbosity normal --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura,opencover\" /p:CoverletOutput=./CodeCoverageResults/
+          
+      - name: End SonarQube analysis
+        run: |
+          dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
