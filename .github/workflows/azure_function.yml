@@ -1,26 +1,26 @@
 - task: NodeTool@0
-displayName: "Use Node 14"
-inputs:
+  displayName: "Use Node 14"
+  inputs:
   versionSpec: 14.18.1
 - task: Npm@1
-displayName: "Install Azure Functions tools"
-inputs:
+  displayName: "Install Azure Functions tools"
+  inputs:
   command: "custom"
   customCommand: "install -g azure-functions-core-tools"
 - download: "current"
-displayName: "Download UI.Function"
-artifact: "UI.Function"
+  displayName: "Download UI.Function"
+  artifact: "UI.Function"
 - task: ExtractFiles@1
-displayName: "Extract UI.Function"
-inputs:
+  displayName: "Extract UI.Function"
+  inputs:
   archiveFilePatterns: "$(Pipeline.Workspace)/UI.Function/UI.Function.zip"
   destinationFolder: "$(Pipeline.Workspace)/Extracted/"
   cleanDestinationFolder: true
   overwriteExistingFiles: false
 - task: AzureCLI@2
-displayName: "Deploy UI.Function"
-retryCountOnTaskFailure: ${{ parameters.retryDeployCount }}
-inputs:
+  displayName: "Deploy UI.Function"
+  retryCountOnTaskFailure: "${{ parameters.retryDeployCount }}"
+    inputs:
   workingDirectory: "$(Pipeline.Workspace)/Extracted/"
   azureSubscription: $(azureResourceManagerConnection)
   scriptType: pscore
