@@ -1,0 +1,55 @@
+  - download: "current"
+    displayName: "Download UI.Api"
+    artifact: "UI.Api"
+  - task: FileTransform@1
+    displayName: "Transform UI.Api"
+    inputs:
+      folderPath: "$(Pipeline.Workspace)/UI.Api/UI.Api.zip"
+      fileType: "xml"
+      targetFiles: "Web.config"
+  - task: AzureCLI@2
+    displayName: "Deploy UI.Api"
+    retryCountOnTaskFailure: ${{ parameters.retryDeployCount }}
+    inputs:
+      azureSubscription: $(azureResourceManagerConnection)
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: |
+        if ("${{ parameters.useDeploymentSlots }}" -eq "true") {
+          az webapp config appsettings set `
+          --resource-group "${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --name "app-api-${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --settings WEBSITE_RUN_FROM_PACKAGE="1" `
+          --slot "staging"
+
+          az webapp deployment source config-zip `
+          --resource-group "${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --name "app-api-${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --src "$(Pipeline.Workspace)/UI.Api/UI.Api.zip" `
+          --slot "staging"
+        }
+        else {
+          az webapp config appsettings set `
+          --resource-group "${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --name "app-api-${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --settings WEBSITE_RUN_FROM_PACKAGE="1"
+
+          az webapp deployment source config-zip `
+          --resource-group "${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --name "app-api-${{ parameters.projectName }}-${{ parameters.environment }}" `
+          --src "$(Pipeline.Workspace)/UI.Api/UI.Api.zip"
+        }
+
+
+
+
+
+  - task: AzurePowerShell@5
+    displayName: 'Deploy Function'
+    retryCountOnTaskFailure: 3
+      inputs:
+        azureSubscription: ${{ variables.serviceConnection }}
+        azurePowerShellVersion: 'LatestVersion'
+        ScriptType: 'InlineScript'
+        Inline: |
+          Publish-AzWebApp -ResourceGroupName $(resourceGroup) -Name $(maasMaasSharedFunctionApp) -Slot stage -ArchivePath $(Pipeline.Workspace)/SharedFunctionApp/SharedFunctionApp.zip -Force

@@ -1,0 +1,35 @@
+- task: NodeTool@0
+displayName: "Use Node 14"
+inputs:
+  versionSpec: 14.18.1
+- task: Npm@1
+displayName: "Install Azure Functions tools"
+inputs:
+  command: "custom"
+  customCommand: "install -g azure-functions-core-tools"
+- download: "current"
+displayName: "Download UI.Function"
+artifact: "UI.Function"
+- task: ExtractFiles@1
+displayName: "Extract UI.Function"
+inputs:
+  archiveFilePatterns: "$(Pipeline.Workspace)/UI.Function/UI.Function.zip"
+  destinationFolder: "$(Pipeline.Workspace)/Extracted/"
+  cleanDestinationFolder: true
+  overwriteExistingFiles: false
+- task: AzureCLI@2
+displayName: "Deploy UI.Function"
+retryCountOnTaskFailure: ${{ parameters.retryDeployCount }}
+inputs:
+  workingDirectory: "$(Pipeline.Workspace)/Extracted/"
+  azureSubscription: $(azureResourceManagerConnection)
+  scriptType: pscore
+  scriptLocation: inlineScript
+  inlineScript: |
+    az functionapp config appsettings set `
+      --resource-group "${{ parameters.projectName }}-${{ parameters.environment }}" `
+      --name "app-function-${{ parameters.projectName }}-${{ parameters.environment }}" `
+      --settings AzureDevopsToken="${{ parameters.azureDevopsToken }}" EnvironmentName="${{ parameters.environment }}"
+
+    func azure functionapp publish app-function-${{ parameters.projectName }}-${{ parameters.environment }} `
+      --typescript
